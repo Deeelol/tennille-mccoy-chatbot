@@ -49,14 +49,23 @@ async function askBot(question) {
     });
 
     const data = await response.json();
+    console.log("HF Response:", data);
 
-    if (data && data.generated_text) {
-      addMessage(data.generated_text.trim(), "bot");
+    // ✅ Handle "model is loading" case
+    if (data.error && data.error.includes("loading")) {
+      addMessage("⏳ The assistant is waking up… please try again in a few seconds.", "bot");
+      return;
+    }
+
+    // ✅ Hugging Face returns an array of generated_text
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      addMessage(data[0].generated_text.trim(), "bot");
     } else {
       addMessage("⚠️ Sorry, I couldn’t get a response. Please try again.", "bot");
     }
+
   } catch (error) {
-    console.error(error);
+    console.error("API error:", error);
     addMessage("❌ There was an error connecting to the assistant.", "bot");
   }
 }
