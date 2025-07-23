@@ -49,13 +49,20 @@ async function askBot(question) {
     });
 
     const data = await response.json();
-    console.log("HF Response:", data);
+    console.log("HF API Response:", data); // ✅ Debugging log
 
-    // ✅ Handle "model is loading" case
-    if (data.error && data.error.includes("loading")) {
-      addMessage("⏳ The assistant is waking up… please try again in a few seconds.", "bot");
-      return;
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      addMessage(data[0].generated_text.trim(), "bot");
+    } else if (data.error) {
+      addMessage(`⚠️ Model error: ${data.error}`, "bot");
+    } else {
+      addMessage("⚠️ Sorry, I couldn’t get a response. Please try again.", "bot");
     }
+  } catch (error) {
+    console.error(error);
+    addMessage("❌ There was an error connecting to the assistant.", "bot");
+  }
+}
 
     // ✅ Hugging Face returns an array of generated_text
     if (Array.isArray(data) && data[0]?.generated_text) {
